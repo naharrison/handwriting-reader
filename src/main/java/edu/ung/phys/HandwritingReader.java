@@ -4,8 +4,12 @@ import processing.core.PApplet;
 
 import java.util.Collections;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
+import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.File; 
 
 import org.encog.Encog;
 import org.encog.engine.network.activation.ActivationSigmoid;
@@ -77,7 +81,7 @@ public class HandwritingReader extends PApplet {
 
     final ResilientPropagation train = new ResilientPropagation(network, trainingSet);
     int epoch = 1;
-    while(train.getError() > 0.03 || epoch == 1) {
+    while(train.getError() > 0.035 || epoch == 1) {
       train.iteration();
       System.out.println(epoch + " " + train.getError());
       epoch++;
@@ -131,6 +135,8 @@ public class HandwritingReader extends PApplet {
     ellipse(50, height - 50, 40, 40);
     fill(0, 0, 255);
     ellipse(100, height - 50, 40, 40);
+    fill(225, 75, 75);
+    ellipse(150, height - 50, 40, 40);
   }
 
 
@@ -143,15 +149,47 @@ public class HandwritingReader extends PApplet {
 
 
   public void mouseClicked() {
-    if(Math.sqrt(Math.pow(mouseX - 50, 2.0) + Math.pow(mouseY - (height-50), 2.0)) < 40) {
+    if(Math.sqrt(Math.pow(mouseX - 50, 2.0) + Math.pow(mouseY - (height-50), 2.0)) < 20) {
       System.out.println("green button clicked");
       queryNetwork();
     }
 
-    if(Math.sqrt(Math.pow(mouseX - 100, 2.0) + Math.pow(mouseY - (height-50), 2.0)) < 40) {
+    if(Math.sqrt(Math.pow(mouseX - 100, 2.0) + Math.pow(mouseY - (height-50), 2.0)) < 20) {
       System.out.println("blue button clicked - pixels reset");
       System.out.println("");
       for(int k = 0; k < 28*28; k++) pixels.set(k, 0);
+    }
+
+    if(Math.sqrt(Math.pow(mouseX - 150, 2.0) + Math.pow(mouseY - (height-50), 2.0)) < 20) {
+      System.out.print("red button clicked - random example loaded ");
+      try {
+        loadRandom();
+      }
+      catch(IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+
+  public void loadRandom() throws IOException {
+    Random r = new Random();
+    Scanner sc = new Scanner(new File("data/mnist_10k.txt"));
+
+    String line = sc.nextLine();
+    for(int k = 0; k < r.nextInt(1000); k++) {
+      line = sc.nextLine();
+    }
+
+    int[] pxarray = Arrays.asList(line.split(","))
+                      .stream()
+                      .map(String::trim)
+                      .mapToInt(Integer::parseInt).toArray();
+
+    System.out.println(pxarray[0]);
+
+    for(int k = 0; k < 28*28; k++) {
+      pixels.set(k, pxarray[k+1]);
     }
   }
 
